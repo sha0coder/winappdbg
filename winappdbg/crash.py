@@ -61,10 +61,10 @@ __all__ = [
     'DummyCrashContainer',
 ]
 
-import win32
-from system import System
-from textio import HexDump, CrashDump
-from util import StaticClass, MemoryAddresses, PathOperations
+from . import win32
+from .system import System
+from .textio import HexDump, CrashDump
+from .util import StaticClass, MemoryAddresses, PathOperations
 
 import time
 import zlib
@@ -100,7 +100,7 @@ except ImportError:
 
     # Faster implementation of the pickle module as a C extension.
     try:
-        import cPickle as pickle
+        import pickle as pickle
 
     # If all fails fallback to the classic pickle module.
     except ImportError:
@@ -524,7 +524,7 @@ class Crash (object):
             # Stack trace.
             try:
                 self.stackTracePretty = thread.get_stack_trace_with_labels()
-            except Exception, e:
+            except Exception as e:
                 warnings.warn(
                     "Cannot get stack trace with labels, reason: %s" % str(e),
                     CrashWarning)
@@ -535,7 +535,7 @@ class Crash (object):
                 stackTraceLabels    = [ process.get_label_at_address(ra) \
                                              for ra in self.stackTracePC ]
                 self.stackTraceLabels = tuple(stackTraceLabels)
-            except Exception, e:
+            except Exception as e:
                 warnings.warn("Cannot get stack trace, reason: %s" % str(e),
                               CrashWarning)
 
@@ -569,7 +569,7 @@ class Crash (object):
         # Get the command line for the target process.
         try:
             self.commandLine = process.get_command_line()
-        except Exception, e:
+        except Exception as e:
             warnings.warn("Cannot get command line, reason: %s" % str(e),
                           CrashWarning)
 
@@ -578,7 +578,7 @@ class Crash (object):
             self.environmentData = process.get_environment_data()
             self.environment     = process.parse_environment_data(
                                                         self.environmentData)
-        except Exception, e:
+        except Exception as e:
             warnings.warn("Cannot get environment, reason: %s" % str(e),
                           CrashWarning)
 
@@ -594,13 +594,13 @@ class Crash (object):
         # Contents of the stack frame.
         try:
             self.stackRange = thread.get_stack_range()
-        except Exception, e:
+        except Exception as e:
             warnings.warn("Cannot get stack range, reason: %s" % str(e),
                           CrashWarning)
         try:
             self.stackFrame = thread.get_stack_frame()
             stackFrame = self.stackFrame
-        except Exception, e:
+        except Exception as e:
             self.stackFrame = thread.peek_stack_data()
             stackFrame = self.stackFrame[:64]
         if stackFrame:
@@ -610,7 +610,7 @@ class Crash (object):
         self.faultCode   = thread.peek_code_bytes()
         try:
             self.faultDisasm = thread.disassemble_around_pc(32)
-        except Exception, e:
+        except Exception as e:
             warnings.warn("Cannot disassemble, reason: %s" % str(e),
                           CrashWarning)
 
@@ -1048,7 +1048,7 @@ class Crash (object):
         """
         msg = ''
         if self.environment:
-            for key, value in self.environment.iteritems():
+            for key, value in self.environment.items():
                 msg += '  %s=%s\n' % (key, value)
         return msg
 
@@ -1198,10 +1198,10 @@ class CrashContainer (object):
         if filename:
             global anydbm
             if not anydbm:
-                import anydbm
-            self.__db = anydbm.open(filename, 'c')
+                import dbm
+            self.__db = dbm.open(filename, 'c')
             self.__keys = dict([ (self.unmarshall_key(mk), mk)
-                                                  for mk in self.__db.keys() ])
+                                                  for mk in list(self.__db.keys()) ])
         else:
             self.__db = dict()
             self.__keys = dict()
@@ -1346,7 +1346,7 @@ class CrashContainer (object):
         @return:
             C{True} if a Crash object with the same key is in the container.
         """
-        return self.has_key( crash.key() )  # NOQA
+        return crash.key() in self  # NOQA
 
     def has_key(self, key):
         """
@@ -1363,7 +1363,7 @@ class CrashContainer (object):
         @rtype:  iterator
         @return: Iterator of known L{Crash} keys.
         """
-        return self.__keys.iterkeys()
+        return iter(self.__keys.keys())
 
     class __CrashContainerIterator (object):
         """
@@ -1383,15 +1383,15 @@ class CrashContainer (object):
             # TODO: lock the database when iterating it.
             #
             self.__container = container
-            self.__keys_iter = container.iterkeys()
+            self.__keys_iter = iter(container.keys())
 
-        def next(self):
+        def __next__(self):
             """
             @rtype:  L{Crash}
             @return: A B{copy} of a Crash object in the L{CrashContainer}.
             @raise StopIteration: No more items left.
             """
-            key  = self.__keys_iter.next()
+            key  = next(self.__keys_iter)
             return self.__container.get(key)
 
     def __del__(self):
@@ -1408,7 +1408,7 @@ class CrashContainer (object):
         @rtype:  iterator
         @return: Iterator of the contained L{Crash} objects.
         """
-        return self.itervalues()
+        return iter(self.values())
 
     def itervalues(self):
         """
@@ -1544,7 +1544,7 @@ class CrashDictionary(object):
         if sql is None:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                import sql
+                from . import sql
 
         # Initialize the private members of the class.
         self._allowRepeatedKeys = allowRepeatedKeys
@@ -1714,8 +1714,8 @@ class CrashTableMSSQL (CrashDictionary):
         warnings.warn(
             "The %s class is deprecated since WinAppDbg 1.5." % self.__class__,
             DeprecationWarning)
-        import urllib
-        url = "mssql+pyodbc:///?odbc_connect=" + urllib.quote_plus(location)
+        import urllib.request, urllib.parse, urllib.error
+        url = "mssql+pyodbc:///?odbc_connect=" + urllib.parse.quote_plus(location)
         super(CrashTableMSSQL, self).__init__(url, allowRepeatedKeys)
 
 class VolatileCrashContainer (CrashTable):
@@ -1822,7 +1822,7 @@ class DummyCrashContainer(object):
         @rtype:  bool
         @return: C{True} if a matching L{Crash} object is in the container.
         """
-        return self.__keys.has_key( key )  # NOQA
+        return key in self.__keys  # NOQA
 
     def iterkeys(self):
         """

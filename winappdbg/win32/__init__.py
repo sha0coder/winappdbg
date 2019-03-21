@@ -58,7 +58,7 @@ except ImportError:
         if kw.pop("use_last_error", False):
             flags |= ctypes._FUNCFLAG_USE_LASTERROR
         if kw:
-            raise ValueError("unexpected keyword argument(s) %s" % kw.keys())
+            raise ValueError("unexpected keyword argument(s) %s" % list(kw.keys()))
         try:
             return ctypes._win_functype_cache[(restype, argtypes, flags)]
         except KeyError:
@@ -121,7 +121,7 @@ except ImportError:
 
     # Fix FormatError.
     def FormatError(code):
-        code = int(long(code))
+        code = int(int(code))
         try:
             if GuessStringType.t_default == GuessStringType.t_ansi:
                 FormatMessage = windll.kernel32.FormatMessageA
@@ -142,7 +142,7 @@ except ImportError:
             pass
         if GuessStringType.t_default == GuessStringType.t_ansi:
             return "Error code 0x%.8X" % code
-        return u"Error code 0x%.8X" % code
+        return "Error code 0x%.8X" % code
     ctypes.FormatError = FormatError
 
     # Fix WinError.
@@ -179,29 +179,29 @@ except ImportError:
 
 # Import all submodules into this namespace.
 # Required for compatibility with older versions of WinAppDbg.
-import defines
-import kernel32
-import user32
-import advapi32
-import wtsapi32
-import shell32
-import shlwapi
-import psapi
-import dbghelp
-import ntdll
+from . import defines
+from . import kernel32
+from . import user32
+from . import advapi32
+from . import wtsapi32
+from . import shell32
+from . import shlwapi
+from . import psapi
+from . import dbghelp
+from . import ntdll
 
 # Import all symbols from submodules into this namespace.
 # Required for compatibility with older versions of WinAppDbg.
-from defines    import *  # NOQA
-from kernel32   import *  # NOQA
-from user32     import *  # NOQA
-from advapi32   import *  # NOQA
-from wtsapi32   import *  # NOQA
-from shell32    import *  # NOQA
-from shlwapi    import *  # NOQA
-from psapi      import *  # NOQA
-from dbghelp    import *  # NOQA
-from ntdll      import *  # NOQA
+from .defines    import *  # NOQA
+from .kernel32   import *  # NOQA
+from .user32     import *  # NOQA
+from .advapi32   import *  # NOQA
+from .wtsapi32   import *  # NOQA
+from .shell32    import *  # NOQA
+from .shlwapi    import *  # NOQA
+from .psapi      import *  # NOQA
+from .dbghelp    import *  # NOQA
+from .ntdll      import *  # NOQA
 
 # This calculates the list of exported symbols.
 _all = set()

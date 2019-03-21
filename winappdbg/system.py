@@ -35,16 +35,16 @@ System settings.
     System
 """
 
-from __future__ import with_statement
+
 
 __all__ = ['System']
 
-import win32
+from . import win32
 import win32.version
-from registry import Registry
-from util import MemoryAddresses, DebugRegister, classproperty
-from process import _ProcessContainer
-from window import Window
+from .registry import Registry
+from .util import MemoryAddresses, DebugRegister, classproperty
+from .process import _ProcessContainer
+from .window import Window
 
 import os
 import glob
@@ -434,7 +434,7 @@ class System (_ProcessContainer):
             pBuffer, dwLen = win32.VerQueryValueA(pBlock, "\\")
         else:
             pBlock = win32.GetFileVersionInfoW(filename)
-            pBuffer, dwLen = win32.VerQueryValueW(pBlock, u"\\")
+            pBuffer, dwLen = win32.VerQueryValueW(pBlock, "\\")
         if dwLen != ctypes.sizeof(win32.VS_FIXEDFILEINFO):
             raise ctypes.WinError(win32.ERROR_BAD_LENGTH)
         pVersionInfo = ctypes.cast(
@@ -765,7 +765,7 @@ class System (_ProcessContainer):
             if not previous or force:
                 os.environ["_NT_SYMBOL_PATH"] = symbol_store_path
             return previous
-        except Exception, e:
+        except Exception as e:
             warnings.warn("Cannot fix symbol path, reason: %s" % str(e),
                           RuntimeWarning)
 
@@ -998,7 +998,7 @@ class System (_ProcessContainer):
         except KeyError:
             return []
 
-        return [name for (name, enabled) in key.items() if enabled]
+        return [name for (name, enabled) in list(key.items()) if enabled]
 
     @classmethod
     def set_postmortem_debugger(cls, cmdline,

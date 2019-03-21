@@ -99,9 +99,9 @@ class PDebug (ConsoleDebugger):
 
     # Print the welcome banner.
     def print_banner(self):
-        print "WinAppDbg %s console debugger" % winappdbg.version
-        print "by Mario Vilas (mvilas at gmail.com)"
-        print
+        print("WinAppDbg %s console debugger" % winappdbg.version)
+        print("by Mario Vilas (mvilas at gmail.com)")
+        print()
 
 #------------------------------------------------------------------------------
 # Command line parsing

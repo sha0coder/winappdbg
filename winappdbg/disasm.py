@@ -39,7 +39,7 @@ Binary code disassembly.
     LibdisassembleEngine, PyDasmEngine
 """
 
-from __future__ import with_statement
+
 
 __all__ = [
     'Disassembler',
@@ -51,8 +51,8 @@ __all__ = [
     'PyDasmEngine',
 ]
 
-from textio import HexDump
-import win32
+from .textio import HexDump
+from . import win32
 
 import ctypes
 import warnings

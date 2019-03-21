@@ -75,7 +75,7 @@ __all__ = [
 import os
 import optparse
 
-import win32
+from . import win32
 
 # Cygwin compatibility.
 try:
@@ -138,12 +138,12 @@ class Regenerator(object):
         'x.__iter__() <==> iter(x)'
         return self
 
-    def next(self):
+    def __next__(self):
         'x.next() -> the next value, or raise StopIteration'
         if self.__g_object is None:
             self.__g_object = self.__g_function( *self.__v_args, **self.__d_args )
         try:
-            return self.__g_object.next()
+            return next(self.__g_object)
         except StopIteration:
             self.__g_object = None
             raise
@@ -303,11 +303,11 @@ class PathOperations (StaticClass):
                     system_root_path = system_root_path[:-1]
                 name = system_root_path + name[11:]
             else:
-                for drive_number in xrange(ord('A'), ord('Z') + 1):
+                for drive_number in range(ord('A'), ord('Z') + 1):
                     drive_letter = '%c:' % drive_number
                     try:
                         device_native_path = win32.QueryDosDevice(drive_letter)
-                    except WindowsError, e:
+                    except WindowsError as e:
                         if e.winerror in (win32.ERROR_FILE_NOT_FOUND, \
                                                  win32.ERROR_PATH_NOT_FOUND):
                             continue

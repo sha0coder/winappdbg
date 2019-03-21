@@ -32,7 +32,7 @@
 Wrapper for ntdll.dll in ctypes.
 """
 
-from defines import *  # NOQA
+from .defines import *  # NOQA
 
 #==============================================================================
 # This is used later on to calculate the list of exported symbols.
@@ -41,7 +41,7 @@ _all = set(vars().keys())
 _all.add('peb_teb')
 #==============================================================================
 
-from peb_teb import *
+from .peb_teb import *
 
 #--- Types --------------------------------------------------------------------
 
@@ -433,7 +433,7 @@ def NtQueryInformationProcess(ProcessHandle, ProcessInformationClass, ProcessInf
             ProcessInformation = PROCESS_BASIC_INFORMATION()
             ProcessInformationLength = sizeof(PROCESS_BASIC_INFORMATION)
         elif ProcessInformationClass == ProcessImageFileName:
-            unicode_buffer = ctypes.create_unicode_buffer(u"", 0x1000)
+            unicode_buffer = ctypes.create_unicode_buffer("", 0x1000)
             ProcessInformation = UNICODE_STRING(0, 0x1000, addressof(unicode_buffer))
             ProcessInformationLength = sizeof(UNICODE_STRING)
         elif ProcessInformationClass in (ProcessDebugPort, ProcessWow64Information, ProcessWx86Information, ProcessHandleCount, ProcessPriorityBoost):
