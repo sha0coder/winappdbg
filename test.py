@@ -36,7 +36,7 @@ import warnings
 
 def test(title, fn):
     title = "Testing %s... " % title
-    print(title, end=' ')
+    print(title)
     try:
         fn()
         print("\tOK")

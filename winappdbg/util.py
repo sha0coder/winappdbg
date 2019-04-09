@@ -765,7 +765,10 @@ class DebugRegister (StaticClass):
     )
 
     # Dr7 &= disableMask[register]
-    disableMask = tuple( [registerMask ^ x for x in enableMask] )
+    disableMask = []
+    for x in enableMask:
+        disableMask.append(registerMask ^ x)
+    disableMask = tuple(DisableMask)
     del x
 
     # orMask, andMask = triggerMask[register][trigger]
